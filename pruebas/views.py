@@ -35,6 +35,13 @@ class ClassifierModelList(generics.ListAPIView):
         datatxt_id = self.kwargs['datatxt_id']
         return BaseTestResult.objects.filter(model_version__datatxt_id=datatxt_id).order_by('created')
 
+    def check_permissions(self, request):
+        return True
+
+    def perform_authentication(self, request):
+        pass
+
+
 
 # class ClassifierModelDetail(generics.RetrieveAPIView):
 #     queryset = ClassifierModel.objects.all()
