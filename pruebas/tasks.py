@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from collections import defaultdict
-from django.db import transaction
 
 import grequests
 import json
@@ -130,46 +129,50 @@ def test_model(datatxt_id, model, threshold=0.32):
     docs = BaseDocument.objects.all()
     dt = DatatxtCL()
     classes_mapping = compute_class_mapping()
+
+    test_result = BaseTestResult()
+    test_result.json_model = model.json_model
+    test_result.model_version = model
+    test_result.save()
+
     try:
-        with transaction.atomic():
-            test_result = BaseTestResult()
-            test_result.json_model = model.json_model
-            test_result.model_version = model
-            test_result.save()
-            all_scores = []
-            all_count = docs.count()
-            count = 1
-            for doc in docs:
-                print "{}/{}".format(count, all_count)
-                count += 1
-                current_gs = json.loads(doc.goal_standard)
-                if current_gs == {}:
-                    continue
+        all_scores = []
+        all_count = docs.count()
+        count = 1
+        for doc in docs:
+            print "{}/{}".format(count, all_count)
+            count += 1
+            current_gs = json.loads(doc.goal_standard)
+            if current_gs == {}:
+                continue
 
-                res, raw_res = analyze_doc(doc, datatxt_id, dt, threshold)
-                score = score_result(
-                    current_gs, res, classes_mapping
-                )
+            res, raw_res = analyze_doc(doc, datatxt_id, dt, threshold)
+            score = score_result(
+                current_gs, res, classes_mapping
+            )
 
-                all_scores.append(score)
-                # create a document Annotation
-                doc_ann = DocumentAnnotation()
-                doc_ann.test_results = json.dumps(score)
-                doc_ann.document = doc
-                doc_ann.test_running = test_result
-                doc_ann.raw_result = json.dumps(raw_res)
-                doc_ann.save()
+            all_scores.append(score)
+            # create a document Annotation
+            doc_ann = DocumentAnnotation()
+            doc_ann.test_results = json.dumps(score)
+            doc_ann.document = doc
+            doc_ann.test_running = test_result
+            doc_ann.raw_result = json.dumps(raw_res)
+            doc_ann.save()
 
-            #compute mico/macro precision
-            micro = compute_micro(all_scores)
-            test_result.micro_f1 = micro.get('fscore')
-            test_result.micro_precision = micro.get('precision')
-            test_result.micro_recall = micro.get('recall')
-            macro = compute_macro(all_scores)
-            test_result.macro_f1 = macro.get('fscore')
-            test_result.macro_precision = macro.get('precision')
-            test_result.macro_recall = macro.get('recall')
-            test_result.save()
+        #compute mico/macro precision
+        micro = compute_micro(all_scores)
+        test_result.micro_f1 = micro.get('fscore')
+        test_result.micro_precision = micro.get('precision')
+        test_result.micro_recall = micro.get('recall')
+        macro = compute_macro(all_scores)
+        test_result.macro_f1 = macro.get('fscore')
+        test_result.macro_precision = macro.get('precision')
+        test_result.macro_recall = macro.get('recall')
+        test_result.save()
+    except:
+        [doc_a.delete() for doc_a in test_result.documentannotation_set.all()]
+        test_result.delete()
     finally:
         #delete model
         dt.delete_model(datatxt_id)
