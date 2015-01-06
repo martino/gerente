@@ -8,7 +8,7 @@ from celery import shared_task
 from django.conf import settings
 
 from documentos.models import BaseDocument
-from gerente.datatxt_helpers import DatatxtCL
+from gerente.datatxt_helpers import Datatxt
 from pruebas.models import BaseTestResult, DocumentAnnotation
 
 
@@ -127,7 +127,7 @@ def compute_macro(scores):
 def test_model(datatxt_id, model, threshold=0.32):
     print 'Testing {}'.format(datatxt_id)
     docs = BaseDocument.objects.all()
-    dt = DatatxtCL()
+    dt = Datatxt()
     classes_mapping = compute_class_mapping()
 
     test_result = BaseTestResult()

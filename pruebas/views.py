@@ -1,7 +1,7 @@
 from django.http import Http404, HttpResponse
 from rest_framework import generics
 from clasificador.models import ClassifierModel
-from gerente.datatxt_helpers import DatatxtCL
+from gerente.datatxt_helpers import Datatxt
 from pruebas.models import BaseTestResult
 from pruebas.serializers import BaseTestResultSerializer
 from pruebas.tasks import test_model
@@ -15,7 +15,7 @@ def model_test(request, datatxt_id):
         raise Http404
 
     #create a new classifier on datatxt
-    dt = DatatxtCL()
+    dt = Datatxt()
     req = dt.create_model(model.json_model)
     res = req.json()
     model_id = res.get('id')

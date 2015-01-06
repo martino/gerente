@@ -34,3 +34,14 @@ class DocumentAnnotation(TimeStampedModel):
     document = models.ForeignKey(BaseDocument, null=True)
     test_running = models.ForeignKey(BaseTestResult)
     raw_result = models.TextField(blank=True, null=True)
+
+
+class ModelClass(TimeStampedModel):
+    name = models.TextField()
+    alternative_names = models.TextField(null=True, blank=True)
+
+
+class GoalStandard(TimeStampedModel):
+    class_obj = models.ForeignKey(ModelClass)
+    frame = models.TextField()
+    annotations = models.TextField(null=True, blank=True)

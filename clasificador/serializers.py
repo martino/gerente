@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from clasificador.models import ClassifierModel
-from gerente.datatxt_helpers import DatatxtCL
+from gerente.datatxt_helpers import Datatxt
 
 import json
 
@@ -14,7 +14,7 @@ class DataTXTErrors(APIException):
 class ClassifierModelSerializer(serializers.BaseSerializer):
     @staticmethod
     def update_on_datatxt(model_id, model):
-        dt = DatatxtCL()
+        dt = Datatxt()
         req = dt.update_model(model_id, model)
         if req.status_code != 200:
             print req.content
@@ -22,7 +22,7 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
 
     @staticmethod
     def create_on_datatxt(model):
-        dt = DatatxtCL()
+        dt = Datatxt()
         req = dt.create_model(model)
         if req.status_code == 200:
             res = req.json()
