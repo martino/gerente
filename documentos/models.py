@@ -11,3 +11,20 @@ class BaseDocument(TimeStampedModel):
 class DocumentPart(TimeStampedModel):
     document = models.ForeignKey(BaseDocument)
     text = models.TextField()
+
+
+class Node(TimeStampedModel):
+    name = models.TextField()
+    alternative_names = models.TextField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+
+class Frame(TimeStampedModel):
+    node = models.ForeignKey(Node)
+    text = models.TextField()
+    annotations = models.TextField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.text

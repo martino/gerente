@@ -1,6 +1,8 @@
 from django.contrib import admin
-from documentos.models import BaseDocument, DocumentPart
+from documentos.models import BaseDocument, DocumentPart, Node, Frame
 
 
 admin.site.register(BaseDocument)
 admin.site.register(DocumentPart)
+admin.site.register(Node)
+admin.site.register(Frame)
