@@ -2,6 +2,7 @@ from collections import defaultdict
 import json
 import operator
 from clasificador.models import ClassifierModel
+from clasificador.serializers import ClassifierModelSerializer
 from documentos.models import Node, Frame
 from datetime import datetime
 
@@ -101,9 +102,9 @@ def create_new_model():
         })
 
     model_data['categories'] = categories
-
-    new_model.json_model = json.dumps(model_data)
-    new_model.save()
+    serializer = ClassifierModelSerializer()
+    serializer.update(
+        new_model, {'json_model': json.dumps(model_data)}, init_dt=True)
 
 
 

@@ -50,11 +50,15 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
         validated_data['datatxt_id'] = datatxt_id
         return ClassifierModel.objects.create(**validated_data)
 
-    def update(self, instance, validated_data):
+    def update(self, instance, validated_data, init_dt=False):
         new_data = validated_data.get('json_model')
-        self.update_on_datatxt(
-            instance.datatxt_id, new_data
-        )
+        if init_dt:
+            datatxt_id = self.create_on_datatxt(new_data)
+            instance.datatxt_id = datatxt_id
+        else:
+            self.update_on_datatxt(
+                instance.datatxt_id, new_data
+            )
         instance.json_model = new_data
         if validated_data.get('name') is not None:
             instance.name = validated_data.get('name')
