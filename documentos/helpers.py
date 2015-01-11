@@ -24,7 +24,8 @@ def get_sample():
         for node in grouped_class
     ]
 
-    sample_size = int(min([group[0].count() for group in grouped_frames])/2)
+    smallest_group = min([group[0].count() for group in grouped_frames])
+    sample_size = int((smallest_group/3)*2)
     print "sample size: {}".format(sample_size)
     sample_frames = []
     for frame_group in grouped_frames:
@@ -64,10 +65,10 @@ def normalize_topics_with_freq(topics, topic_len):
     return return_topic
 
 
-def create_new_model():
+def create_new_model(description='', topic_limit=20):
     # create a new model
     model_data = {
-        "description": "",
+        "description": description,
         "lang": "it"
     }
     new_model = ClassifierModel()
@@ -91,8 +92,7 @@ def create_new_model():
         topics[frame_group[1]] = cluster
 
     # adjust topic list with
-    # TODO parametrize the limit
-    final_topics = normalize_topics_with_freq(topics, 20)
+    final_topics = normalize_topics_with_freq(topics, topic_limit)
 
     categories = []
     for name, topic in final_topics.iteritems():

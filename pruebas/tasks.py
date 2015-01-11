@@ -7,9 +7,9 @@ import json
 from celery import shared_task
 from django.conf import settings
 
-from documentos.models import BaseDocument
+from documentos.models import BaseDocument, Frame
 from gerente.datatxt_helpers import Datatxt
-from pruebas.models import BaseTestResult, DocumentAnnotation
+from pruebas.models import BaseTestResult, DocumentAnnotation, FrameAnnotation
 
 
 def compute_class_mapping():
@@ -23,7 +23,46 @@ def compute_class_mapping():
     return mappings
 
 
-def score_result(gs, res, mappings):
+def score_result(right_class, founded_class):
+    classes_count = 8
+    if right_class == founded_class:
+        tp = 1
+        tn = classes_count - 1
+        fp = 0
+        fn = 0
+    else:
+        tp = 0
+        tn = classes_count - 2
+        fp = 1
+        fn = 1
+
+    try:
+        precision = tp/float(tp + fp)
+    except ZeroDivisionError:
+        precision = 1
+
+    try:
+        recall = tp/float(tp + fn)
+    except ZeroDivisionError:
+        recall = 1
+
+    accuracy = (tp + tn)/float(tp + tn + fp + fn)
+
+    fscore = (2 * tp)/float(2 * tp + fp + fn)
+
+    return {
+        'tp': tp,
+        'tn': tn,
+        'fp': fp,
+        'fn': fn,
+        'precision': precision,
+        'recall': recall,
+        'accuracy': accuracy,
+        'fscore': fscore
+    }
+
+
+def score_result_complex(gs, res, mappings):
     right_values = gs.keys()
     founded_values = [mappings.get(val) for val in res.keys()]
 
@@ -63,6 +102,20 @@ def score_result(gs, res, mappings):
     }
 
 
+def analyze_frame(frame, model_id, dt, threshold=0.3):
+    res = dt.classify(model_id, frame.text)
+    res_topics = res.json().get('categories', {})
+    result = ''
+    if len(res_topics):
+        best_obj = sorted(
+            res_topics, key=lambda x: x.get('score', 0), reverse=True)[0]
+        if best_obj.get('score', 0) >= threshold:
+            result = best_obj.get('name')
+        else:
+            print best_obj.get('score', 0)
+    return result, res.json()
+
+
 def analyze_doc(doc, model_id, dt, threshold=0.3):
     all_results = defaultdict(int)
     reqs = []
@@ -78,6 +131,8 @@ def analyze_doc(doc, model_id, dt, threshold=0.3):
             if best_obj.get('score', 0) >= threshold:
                 #TODO introduce weigth based on frame length
                 all_results[best_obj.get('name')] += best_obj.get('score')
+
+    # TODO res.json return only the last entry
     return all_results, res.json()
 
 
@@ -124,7 +179,7 @@ def compute_macro(scores):
 
 
 @shared_task
-def test_model(datatxt_id, model, threshold=0.32):
+def test_model_with_docs(datatxt_id, model, threshold=0.32):
     print 'Testing {}'.format(datatxt_id)
     docs = BaseDocument.objects.all()
     dt = Datatxt()
@@ -147,6 +202,7 @@ def test_model(datatxt_id, model, threshold=0.32):
                 continue
 
             res, raw_res = analyze_doc(doc, datatxt_id, dt, threshold)
+
             score = score_result(
                 current_gs, res, classes_mapping
             )
@@ -175,6 +231,70 @@ def test_model(datatxt_id, model, threshold=0.32):
         test_result.delete()
     finally:
         #delete model
+        dt.delete_model(datatxt_id)
+        model.testing_task_id = None
+        model.save()
+
+    return 0
+
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
+
+
+@shared_task
+def test_model(datatxt_id, model, threshold=0.28):
+    # get frame to test
+    generator_frames = model.generation_frames.all()\
+        .values_list('pk', flat=True)
+
+    frame_to_analyze = Frame.objects.exclude(pk__in=generator_frames)
+    grouped_frames = chunks(frame_to_analyze, 50)
+    dt = Datatxt()
+    test_result = BaseTestResult()
+    test_result.json_model = model.json_model
+    test_result.model_version = model
+    test_result.save()
+
+    # tests all frames
+    try:
+        all_scores = []
+        all_count = frame_to_analyze.count()
+        count = 1
+        # TODO split into blocks of 10 elements and paralellize
+        for frame in frame_to_analyze:
+            print "{}/{}".format(count, all_count)
+            count += 1
+            current_class = frame.node.alternative_names
+            found_class, raw_res = analyze_frame(frame, datatxt_id, dt, threshold)
+            print 'compute score: {} - {}'.format(current_class, found_class)
+            score = score_result(current_class, found_class)
+            all_scores.append(score)
+            # score this annotation
+            FrameAnnotation.objects.create(
+                test_results=json.dumps(score),
+                raw_result=json.dumps(raw_res),
+                frame=frame,
+                test_running=test_result
+            )
+        #compute mico/macro precision
+        micro = compute_micro(all_scores)
+        test_result.micro_f1 = micro.get('fscore')
+        test_result.micro_precision = micro.get('precision')
+        test_result.micro_recall = micro.get('recall')
+        macro = compute_macro(all_scores)
+        test_result.macro_f1 = macro.get('fscore')
+        test_result.macro_precision = macro.get('precision')
+        test_result.macro_recall = macro.get('recall')
+        test_result.save()
+    except Exception, e:
+        print e
+        [frame_a.delete() for frame_a in test_result.frameannotation_set.all()]
+        test_result.delete()
+    finally:
         dt.delete_model(datatxt_id)
         model.testing_task_id = None
         model.save()

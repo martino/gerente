@@ -1,7 +1,7 @@
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from clasificador.models import ClassifierModel
-from documentos.models import BaseDocument
+from documentos.models import BaseDocument, Frame
 
 
 class BaseTestResult(TimeStampedModel):
@@ -35,4 +35,10 @@ class DocumentAnnotation(TimeStampedModel):
     test_running = models.ForeignKey(BaseTestResult)
     raw_result = models.TextField(blank=True, null=True)
 
+
+class FrameAnnotation(TimeStampedModel):
+    test_results = models.TextField()
+    raw_result = models.TextField(blank=True, null=True)
+    frame = models.ForeignKey(Frame, null=True)
+    test_running = models.ForeignKey(BaseTestResult)
 
