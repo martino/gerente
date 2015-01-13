@@ -25,16 +25,16 @@ def compute_class_mapping():
 
 def score_result(right_class, founded_class):
     classes_count = 8
+    tp = 0
+    tn = 0
+    fp = 0
+    fn = 0
     if right_class == founded_class:
         tp = 1
-        tn = classes_count - 1
-        fp = 0
-        fn = 0
-    else:
-        tp = 0
-        tn = classes_count - 2
-        fp = 1
+    elif founded_class == '':
         fn = 1
+    else:
+        fp = 1
 
     try:
         precision = tp/float(tp + fp)
@@ -102,6 +102,9 @@ def score_result_complex(gs, res, mappings):
     }
 
 
+# def analyze_frames(frames, model_id, dt, threshold=0.3):
+
+
 def analyze_frame(frame, model_id, dt, threshold=0.3):
     res = dt.classify(model_id, frame.text)
     res_topics = res.json().get('categories', {})
@@ -116,7 +119,7 @@ def analyze_frame(frame, model_id, dt, threshold=0.3):
     return result, res.json()
 
 
-def analyze_doc(doc, model_id, dt, threshold=0.3):
+def analyze_doc(doc, model_id, dt, threshold=0.25):
     all_results = defaultdict(int)
     reqs = []
     #TODO parallelize this
@@ -246,13 +249,13 @@ def chunks(l, n):
 
 
 @shared_task
-def test_model(datatxt_id, model, threshold=0.28):
+def test_model(datatxt_id, model, threshold=0):
     # get frame to test
     generator_frames = model.generation_frames.all()\
         .values_list('pk', flat=True)
 
     frame_to_analyze = Frame.objects.exclude(pk__in=generator_frames)
-    grouped_frames = chunks(frame_to_analyze, 50)
+    # grouped_frames = chunks(frame_to_analyze, 50)
     dt = Datatxt()
     test_result = BaseTestResult()
     test_result.json_model = model.json_model
@@ -270,7 +273,7 @@ def test_model(datatxt_id, model, threshold=0.28):
             count += 1
             current_class = frame.node.alternative_names
             found_class, raw_res = analyze_frame(frame, datatxt_id, dt, threshold)
-            print 'compute score: {} - {}'.format(current_class, found_class)
+            print 'frame: {} compute score: {} - {}'.format(frame.pk, current_class, found_class)
             score = score_result(current_class, found_class)
             all_scores.append(score)
             # score this annotation
