@@ -126,8 +126,11 @@ def analyze_doc(doc, model_id, dt, threshold=0.25):
     for part in doc.documentpart_set.all():
         reqs.append(dt.classify(model_id, part.text, True))
 
+    raw_responses = []
     for res in grequests.map(reqs):
-        res_topics = res.json().get('categories', {})
+        res_json = res.json()
+        raw_responses.append(res_json)
+        res_topics = res_json.get('categories', {})
         if len(res_topics):
             best_obj = sorted(
                 res_topics, key=lambda x: x.get('score', 0), reverse=True)[0]
@@ -135,8 +138,7 @@ def analyze_doc(doc, model_id, dt, threshold=0.25):
                 #TODO introduce weigth based on frame length
                 all_results[best_obj.get('name')] += best_obj.get('score')
 
-    # TODO res.json return only the last entry
-    return all_results, res.json()
+    return all_results, raw_responses
 
 
 def compute_micro(scores):

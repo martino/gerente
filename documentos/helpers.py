@@ -1,13 +1,14 @@
 from collections import defaultdict
 import json
 import operator
+from random import sample
 from clasificador.models import ClassifierModel
 from clasificador.serializers import ClassifierModelSerializer
 from documentos.models import Node, Frame
 from datetime import datetime
 
 
-def get_sample():
+def get_sample(count, random=False):
     flat_values = set(
         Node.objects.all().values_list('alternative_names', flat=True))
 
@@ -29,7 +30,13 @@ def get_sample():
     print "sample size: {}".format(sample_size)
     sample_frames = []
     for frame_group in grouped_frames:
-        sample_frames.append((frame_group[0][:sample_size], frame_group[1]))
+        if random:
+            pk_list = frame_group[0].values_list('pk', flat=True)
+            selected_pks = sample(pk_list, sample_size)
+            selected_frames = Frame.objects.filter(pk__in=selected_pks)
+            sample_frames.append((selected_frames, frame_group[1]))
+        else:
+            sample_frames.append((frame_group[0][:sample_size], frame_group[1]))
     return sample_frames
 
 
@@ -65,7 +72,7 @@ def normalize_topics_with_freq(topics, topic_len):
     return return_topic
 
 
-def create_new_model(description='', topic_limit=20):
+def create_new_model(description='', topic_limit=20, random_sample=False):
     # create a new model
     model_data = {
         "description": description,
@@ -77,7 +84,7 @@ def create_new_model(description='', topic_limit=20):
     new_model.save()
 
     # generate a new sample set
-    sample_set = get_sample()
+    sample_set = get_sample(random_sample)
 
     # extract topic list
     topics = {}
