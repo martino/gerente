@@ -208,7 +208,7 @@ def test_model_with_docs(datatxt_id, model, threshold=0.32):
 
             res, raw_res = analyze_doc(doc, datatxt_id, dt, threshold)
 
-            score = score_result(
+            score = score_result_complex(
                 current_gs, res, classes_mapping
             )
 
@@ -281,6 +281,7 @@ def test_model(datatxt_id, model, threshold=0):
             # score this annotation
             FrameAnnotation.objects.create(
                 test_results=json.dumps(score),
+                raw_scoring=found_class,
                 raw_result=json.dumps(raw_res),
                 frame=frame,
                 test_running=test_result

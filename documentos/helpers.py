@@ -8,7 +8,7 @@ from documentos.models import Node, Frame
 from datetime import datetime
 
 
-def get_sample(count, random=False):
+def get_sample(random=False):
     flat_values = set(
         Node.objects.all().values_list('alternative_names', flat=True))
 
@@ -33,6 +33,7 @@ def get_sample(count, random=False):
         if random:
             pk_list = frame_group[0].values_list('pk', flat=True)
             selected_pks = sample(pk_list, sample_size)
+            print 'selected pks for {} {}'.format(frame_group[1], selected_pks)
             selected_frames = Frame.objects.filter(pk__in=selected_pks)
             sample_frames.append((selected_frames, frame_group[1]))
         else:

@@ -38,6 +38,7 @@ class DocumentAnnotation(TimeStampedModel):
 
 class FrameAnnotation(TimeStampedModel):
     test_results = models.TextField()
+    raw_scoring = models.TextField(blank=True, null=True)
     raw_result = models.TextField(blank=True, null=True)
     frame = models.ForeignKey(Frame, null=True)
     test_running = models.ForeignKey(BaseTestResult)
