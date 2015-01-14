@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from clasificador.models import ClassifierModel
@@ -16,7 +17,7 @@ class BaseTestResult(TimeStampedModel):
     confusion_matrix = models.TextField(null=True, blank=True)
 
     def get_result(self):
-        return {
+        result = {
             'micro': {
                 'fscore': self.micro_f1,
                 'precision': self.micro_precision,
@@ -28,6 +29,10 @@ class BaseTestResult(TimeStampedModel):
                 'recall': self.macro_recall
             }
         }
+        if self.confusion_matrix is not None:
+            result['confusion_matrix'] = json.loads(self.confusion_matrix)
+
+        return result
 
 
 class DocumentAnnotation(TimeStampedModel):

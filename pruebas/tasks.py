@@ -298,7 +298,7 @@ def test_model(datatxt_id, model, threshold=0):
         test_result.macro_recall = macro.get('recall')
         test_result.save()
         confusion_matrix = compute_confusion_matrix(test_result)
-        test_result.confusion_matrix = confusion_matrix
+        test_result.confusion_matrix = json.dumps(confusion_matrix)
         test_result.save()
     except Exception, e:
         print e
