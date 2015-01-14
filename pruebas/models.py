@@ -13,6 +13,7 @@ class BaseTestResult(TimeStampedModel):
     micro_recall = models.FloatField(null=True, blank=True)
     macro_recall = models.FloatField(null=True, blank=True)
     model_version = models.ForeignKey(ClassifierModel, related_name='test')
+    confusion_matrix = models.TextField(null=True, blank=True)
 
     def get_result(self):
         return {
@@ -42,4 +43,3 @@ class FrameAnnotation(TimeStampedModel):
     raw_result = models.TextField(blank=True, null=True)
     frame = models.ForeignKey(Frame, null=True)
     test_running = models.ForeignKey(BaseTestResult)
-

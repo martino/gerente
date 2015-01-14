@@ -9,6 +9,7 @@ from django.conf import settings
 
 from documentos.models import BaseDocument, Frame
 from gerente.datatxt_helpers import Datatxt
+from pruebas.helpers import compute_confusion_matrix
 from pruebas.models import BaseTestResult, DocumentAnnotation, FrameAnnotation
 
 
@@ -295,6 +296,9 @@ def test_model(datatxt_id, model, threshold=0):
         test_result.macro_f1 = macro.get('fscore')
         test_result.macro_precision = macro.get('precision')
         test_result.macro_recall = macro.get('recall')
+        test_result.save()
+        confusion_matrix = compute_confusion_matrix(test_result)
+        test_result.confusion_matrix = confusion_matrix
         test_result.save()
     except Exception, e:
         print e
