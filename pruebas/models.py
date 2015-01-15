@@ -30,7 +30,7 @@ class BaseTestResult(TimeStampedModel):
             }
         }
         if self.confusion_matrix is not None:
-            result['confusion_matrix'] = json.loads(self.confusion_matrix)
+            result['cmatrix'] = json.loads(self.confusion_matrix)
 
         return result
 

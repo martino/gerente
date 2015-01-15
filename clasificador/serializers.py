@@ -4,6 +4,7 @@ from clasificador.models import ClassifierModel
 from gerente.datatxt_helpers import Datatxt
 
 import json
+from pruebas.models import BaseTestResult
 
 
 class DataTXTErrors(APIException):
@@ -38,11 +39,22 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
         }
 
     def to_representation(self, instance):
+        tests = BaseTestResult.objects.filter(model_version=instance)\
+            .order_by('-created')
+        last_test = {}
+        if len(tests):
+            test = tests[0]
+            last_test = {
+                'f1': '{0:.2f}'.format(test.macro_f1),
+                'precision': '{0:.2f}'.format(test.macro_precision),
+                'recall': '{0:.2f}'.format(test.macro_recall),
+            }
         return {
             'id': instance.datatxt_id,
             'name': instance.name,
             'data': json.loads(instance.json_model),
             'testing_task': instance.testing_task_id,
+            'last_test': last_test,
         }
 
     def create(self, validated_data):
