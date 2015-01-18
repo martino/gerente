@@ -42,13 +42,19 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
         tests = BaseTestResult.objects.filter(model_version=instance)\
             .order_by('-created')
         last_test = {}
-        if len(tests):
-            test = tests[0]
-            last_test = {
-                'f1': '{0:.2f}'.format(test.macro_f1),
-                'precision': '{0:.2f}'.format(test.macro_precision),
-                'recall': '{0:.2f}'.format(test.macro_recall),
-            }
+        len_tests = len(tests)
+        if len_tests:
+            i = 0
+            while tests[i].macro_f1 is None and i <= len_tests:
+                i += 1
+            if i < len_tests:
+                test = tests[i]
+
+                last_test = {
+                    'f1': '{0:.2f}'.format(test.macro_f1),
+                    'precision': '{0:.2f}'.format(test.macro_precision),
+                    'recall': '{0:.2f}'.format(test.macro_recall),
+                }
         return {
             'id': instance.datatxt_id,
             'name': instance.name,

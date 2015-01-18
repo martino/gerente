@@ -27,13 +27,13 @@ def get_sample(random=False):
 
     smallest_group = min([group[0].count() for group in grouped_frames])
     sample_size = int((smallest_group/3)*2)
-    print "sample size: {}".format(sample_size)
     sample_frames = []
     for frame_group in grouped_frames:
         if random:
             pk_list = frame_group[0].values_list('pk', flat=True)
+            sample_size = int(len(pk_list)/2)
             selected_pks = sample(pk_list, sample_size)
-            print 'selected pks for {} {}'.format(frame_group[1], selected_pks)
+            print 'sample size for {} {}'.format(frame_group[1], sample_size)
             selected_frames = Frame.objects.filter(pk__in=selected_pks)
             sample_frames.append((selected_frames, frame_group[1]))
         else:
@@ -98,6 +98,7 @@ def create_new_model(description='', topic_limit=20, random_sample=False):
                 url = entity.get('uri', '')
                 cluster[url] += 1
         topics[frame_group[1]] = cluster
+    new_model.save()
 
     # adjust topic list with
     final_topics = normalize_topics_with_freq(topics, topic_limit)
