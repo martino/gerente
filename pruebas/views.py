@@ -33,7 +33,8 @@ class ClassifierModelList(generics.ListAPIView):
 
     def get_queryset(self):
         datatxt_id = self.kwargs['datatxt_id']
-        return BaseTestResult.objects.filter(model_version__datatxt_id=datatxt_id).order_by('created')
+        return BaseTestResult.objects.filter(
+            model_version__datatxt_id=datatxt_id).order_by('created')
 
     def check_permissions(self, request):
         return True

@@ -257,7 +257,14 @@ def test_model(datatxt_id, model, threshold=0):
     generator_frames = model.generation_frames.all()\
         .values_list('pk', flat=True)
 
-    frame_to_analyze = Frame.objects.exclude(pk__in=generator_frames)
+    frame_nodes_pk_list = set(model.generation_frames.all()
+                              .values_list('node__pk', flat=True))
+
+    frame_to_analyze = Frame.objects.filter(node__pk__in=frame_nodes_pk_list)\
+        .exclude(pk__in=generator_frames)
+
+    current_gs = model.goal_standard
+
     # grouped_frames = chunks(frame_to_analyze, 50)
     dt = Datatxt()
     test_result = BaseTestResult()
@@ -274,9 +281,12 @@ def test_model(datatxt_id, model, threshold=0):
         for frame in frame_to_analyze:
             print "{}/{}".format(count, all_count)
             count += 1
-            current_class = frame.node.alternative_names
-            found_class, raw_res = analyze_frame(frame, datatxt_id, dt, threshold)
-            print 'frame: {} compute score: {} - {}'.format(frame.pk, current_class, found_class)
+            current_class = frame.node.super_node\
+                .get(goal_standard=current_gs).name
+            found_class, raw_res = analyze_frame(
+                frame, datatxt_id, dt, threshold)
+            print 'frame: {} compute score: {} - {}'.format(
+                frame.pk, current_class, found_class)
             score = score_result(current_class, found_class)
             all_scores.append(score)
             # score this annotation
@@ -297,10 +307,11 @@ def test_model(datatxt_id, model, threshold=0):
         test_result.macro_precision = macro.get('precision')
         test_result.macro_recall = macro.get('recall')
         test_result.save()
-        confusion_matrix = compute_confusion_matrix(test_result)
+        confusion_matrix = compute_confusion_matrix(test_result, current_gs)
         test_result.confusion_matrix = json.dumps(confusion_matrix)
         test_result.save()
     except Exception, e:
+        print 'Huston we have a problem!'
         print e
         [frame_a.delete() for frame_a in test_result.frameannotation_set.all()]
         test_result.delete()

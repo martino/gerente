@@ -4,23 +4,22 @@ import operator
 from random import sample
 from clasificador.models import ClassifierModel
 from clasificador.serializers import ClassifierModelSerializer
-from documentos.models import Node, Frame
+from documentos.models import Frame
 from datetime import datetime
 
 
-def get_sample(random=False):
-    flat_values = set(
-        Node.objects.all().values_list('alternative_names', flat=True))
+def get_gs_node_labels(gs):
+    return [super_node.name for super_node in gs.supernode_set.all()]
 
-    grouped_class = [
-        Node.objects.filter(alternative_names=a_name)
-        for a_name in flat_values
-    ]
+
+def get_sample(gs, random=False):
+    grouped_class = [(super_node.name, super_node.node_set.all())
+                     for super_node in gs.supernode_set.all()]
 
     grouped_frames = [
         (
-            Frame.objects.filter(node__in=node),
-            node[0].alternative_names
+            Frame.objects.filter(node__in=node[1]),
+            node[0]
         )
         for node in grouped_class
     ]
@@ -73,7 +72,7 @@ def normalize_topics_with_freq(topics, topic_len):
     return return_topic
 
 
-def create_new_model(description='', topic_limit=20, random_sample=False):
+def create_new_model(gs, description='', topic_limit=20, random_sample=False):
     # create a new model
     model_data = {
         "description": description,
@@ -82,10 +81,11 @@ def create_new_model(description='', topic_limit=20, random_sample=False):
     new_model = ClassifierModel()
     new_model.name = "AutoGen Model {}".format(datetime.now().isoformat())
     new_model.json_model = json.dumps(model_data)
+    new_model.goal_standard = gs
     new_model.save()
 
     # generate a new sample set
-    sample_set = get_sample(random_sample)
+    sample_set = get_sample(gs, random_sample)
 
     # extract topic list
     topics = {}

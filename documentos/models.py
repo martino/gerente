@@ -13,9 +13,29 @@ class DocumentPart(TimeStampedModel):
     text = models.TextField()
 
 
+class GoalStandard(TimeStampedModel):
+    name = models.TextField()
+
+    def __unicode__(self):
+        return self.name
+
+
+class SuperNode(TimeStampedModel):
+    name = models.TextField()
+    verbose_name = models.TextField(blank=True, null=True)
+    goal_standard = models.ManyToManyField(GoalStandard)
+
+    def __unicode__(self):
+        ret_value = self.name
+        if self.verbose_name is not None:
+            ret_value = "{} [{}]".format(self.verbose_name, ret_value)
+        return ret_value
+
+
 class Node(TimeStampedModel):
     name = models.TextField()
-    alternative_names = models.TextField(null=True, blank=True)
+    alternative_names = models.TextField(null=True, blank=True)  # TODO remove
+    super_node = models.ManyToManyField(SuperNode, null=True, blank=True)
 
     def __unicode__(self):
         return self.name

@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from documentos.models import Node
+from documentos.helpers import get_gs_node_labels
 
 
 def compute_most_popular_entities(raw_score):
@@ -16,9 +16,8 @@ def compute_most_popular_entities(raw_score):
     return [score_details[0]]
 
 
-def compute_confusion_matrix(test_results):
-    all_nodes_names = list(Node.objects.all().values_list(
-        'alternative_names', flat=True))
+def compute_confusion_matrix(test_results, gs):
+    all_nodes_names = get_gs_node_labels(gs)
     all_nodes_names.append('empty')
 
     confusion_matrix = {
@@ -27,7 +26,8 @@ def compute_confusion_matrix(test_results):
 
     for fa in test_results.frameannotation_set.all():
         score = fa.raw_scoring
-        current_entry = confusion_matrix[fa.frame.node.alternative_names]
+        current_entry = confusion_matrix[
+            fa.frame.node.super_node.get(goal_standard=gs).name]
         try:
             decisive_topics = compute_most_popular_entities(fa.raw_result)[0]
         except IndexError:
