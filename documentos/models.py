@@ -28,6 +28,7 @@ class GoalStandard(TimeStampedModel):
 class SuperNode(TimeStampedModel):
     name = models.TextField()
     verbose_name = models.TextField(blank=True, null=True)
+    # this can be a foreignkey?
     goal_standard = models.ManyToManyField(GoalStandard)
 
     def __unicode__(self):
