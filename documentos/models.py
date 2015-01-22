@@ -2,10 +2,15 @@ from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
 
+class DocumentGroup(TimeStampedModel):
+    name = models.TextField()
+
+
 class BaseDocument(TimeStampedModel):
     file_name = models.TextField()
     original_text = models.TextField()
     goal_standard = models.TextField()
+    group = models.ForeignKey(DocumentGroup, null=True, blank=True)
 
 
 class DocumentPart(TimeStampedModel):
