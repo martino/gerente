@@ -6,11 +6,13 @@ import json
 
 from celery import shared_task
 from django.conf import settings
+from documentos.helpers import split_document
 
 from documentos.models import BaseDocument, Frame
 from gerente.datatxt_helpers import Datatxt
 from pruebas.helpers import compute_confusion_matrix
-from pruebas.models import BaseTestResult, DocumentAnnotation, FrameAnnotation
+from pruebas.models import BaseTestResult, DocumentAnnotation, FrameAnnotation, \
+    DocumentTestResult
 
 
 def compute_class_mapping():
@@ -123,14 +125,11 @@ def analyze_frame(frame, model_id, dt, threshold=0.3):
 def analyze_doc(doc, model_id, dt, threshold=0.25):
     all_results = defaultdict(int)
     reqs = []
-    #TODO parallelize this
-    for part in doc.documentpart_set.all():
-        reqs.append(dt.classify(model_id, part.text, True))
+    for part in split_document(doc.original_text):
+        reqs.append(dt.classify(model_id, part, True))
 
-    raw_responses = []
     for res in grequests.map(reqs):
         res_json = res.json()
-        raw_responses.append(res_json)
         res_topics = res_json.get('categories', {})
         if len(res_topics):
             best_obj = sorted(
@@ -138,8 +137,7 @@ def analyze_doc(doc, model_id, dt, threshold=0.25):
             if best_obj.get('score', 0) >= threshold:
                 #TODO introduce weigth based on frame length
                 all_results[best_obj.get('name')] += best_obj.get('score')
-
-    return all_results, raw_responses
+    return all_results
 
 
 def compute_micro(scores):
@@ -185,62 +183,53 @@ def compute_macro(scores):
 
 
 @shared_task
-def test_model_with_docs(datatxt_id, model, threshold=0.32):
-    print 'Testing {}'.format(datatxt_id)
-    docs = BaseDocument.objects.all()
+def test_document_set(model, document_group, threshold=0.32):
+    print 'Testing {}'.format(document_group)
+    docs = document_group.basedocument_set.all()
     dt = Datatxt()
-    classes_mapping = compute_class_mapping()
+    #create a new classifier on datatxt
+    dt = Datatxt()
+    req = dt.create_model(model.json_model)
+    res = req.json()
+    datatxt_id = res.get('id')
 
-    test_result = BaseTestResult()
-    test_result.json_model = model.json_model
-    test_result.model_version = model
-    test_result.save()
-
+    test_result = DocumentTestResult.objects.create(
+        json_model=model.json_model,
+        model_version=model,
+        document_group=document_group
+    )
+    global_results = defaultdict(int)
+    all_done = True
     try:
-        all_scores = []
         all_count = docs.count()
         count = 1
         for doc in docs:
             print "{}/{}".format(count, all_count)
             count += 1
-            current_gs = json.loads(doc.goal_standard)
-            if current_gs == {}:
-                continue
+            res = analyze_doc(doc, datatxt_id, dt, threshold)
+            for key, value in res.iteritems():
+                global_results[key] += 1
 
-            res, raw_res = analyze_doc(doc, datatxt_id, dt, threshold)
-
-            score = score_result_complex(
-                current_gs, res, classes_mapping
-            )
-
-            all_scores.append(score)
             # create a document Annotation
-            doc_ann = DocumentAnnotation()
-            doc_ann.test_results = json.dumps(score)
-            doc_ann.document = doc
-            doc_ann.test_running = test_result
-            doc_ann.raw_result = json.dumps(raw_res)
-            doc_ann.save()
-
-        #compute mico/macro precision
-        micro = compute_micro(all_scores)
-        test_result.micro_f1 = micro.get('fscore')
-        test_result.micro_precision = micro.get('precision')
-        test_result.micro_recall = micro.get('recall')
-        macro = compute_macro(all_scores)
-        test_result.macro_f1 = macro.get('fscore')
-        test_result.macro_precision = macro.get('precision')
-        test_result.macro_recall = macro.get('recall')
-        test_result.save()
-    except:
+            DocumentAnnotation.objects.create(
+                test_results=json.dumps(res),
+                document=doc,
+                test_running=test_result
+            )
+    except Exception, e:
+        print "huston we have a problem"
+        print e
         [doc_a.delete() for doc_a in test_result.documentannotation_set.all()]
         test_result.delete()
+        all_done = False
     finally:
         #delete model
         dt.delete_model(datatxt_id)
-        model.testing_task_id = None
-        model.save()
-
+        document_group.testing_task_id = None
+        document_group.save()
+        if all_done:
+            test_result.scoring_result = json.dumps(global_results)
+            test_result.save()
     return 0
 
 

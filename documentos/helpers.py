@@ -8,6 +8,15 @@ from documentos.models import Frame
 from datetime import datetime
 
 
+def split_document(text, use_paragraph=True):
+
+    headers_split = text.split('\t\t\n\t\t\n')
+    if len(headers_split) == 2:
+        text = headers_split[1]
+
+    return text.split('.\n')
+
+
 def get_gs_node_labels(gs):
     return [super_node.name for super_node in gs.supernode_set.all()]
 
@@ -36,6 +45,7 @@ def get_sample(gs, random=False):
             selected_frames = Frame.objects.filter(pk__in=selected_pks)
             sample_frames.append((selected_frames, frame_group[1]))
         else:
+
             sample_frames.append((frame_group[0][:sample_size], frame_group[1]))
     return sample_frames
 

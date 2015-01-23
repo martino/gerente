@@ -1,10 +1,10 @@
 from django.contrib import admin
-from documentos.models import BaseDocument, DocumentPart, Node, Frame, \
-    SuperNode, GoalStandard
+from documentos.models import BaseDocument, Node, Frame, \
+    SuperNode, GoalStandard, DocumentGroup
 
 
+admin.site.register(DocumentGroup)
 admin.site.register(BaseDocument)
-admin.site.register(DocumentPart)
 admin.site.register(Node)
 admin.site.register(Frame)
 admin.site.register(SuperNode)

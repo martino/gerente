@@ -2,7 +2,6 @@ from glob import glob
 from django.core.management import BaseCommand
 from codecs import open
 import json
-from documentos.models import DocumentPart
 from documentos.models import BaseDocument
 
 
@@ -35,17 +34,17 @@ class Command(BaseCommand):
                 goal_standard = {}
             with open(file_path) as f:
                 original_text = f.read()
-            text = original_text
-            headers_split = original_text.split('\t\t\n\t\t\n')
-            if len(headers_split) == 2:
-                text = headers_split[1]
+            # text = original_text
+            # headers_split = original_text.split('\t\t\n\t\t\n')
+            # if len(headers_split) == 2:
+            #     text = headers_split[1]
             doc = BaseDocument()
             doc.file_name = file_name
             doc.goal_standard = json.dumps(goal_standard)
             doc.original_text = original_text
             doc.save()
-            for part in text.split('.\n'):
-                dp = DocumentPart()
-                dp.document = doc
-                dp.text = part
-                dp.save()
+            # for part in text.split('.\n'):
+            #     dp = DocumentPart()
+            #     dp.document = doc
+            #     dp.text = part
+            #     dp.save()

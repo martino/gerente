@@ -1,9 +1,17 @@
+# documentos.model
+# change all textfield with json dumped data with hstore in django 1.8
+# http://bit.ly/1yDOVac
+
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 
 
 class DocumentGroup(TimeStampedModel):
     name = models.TextField()
+    testing_task_id = models.TextField(blank=True, null=True)
+
+    def __unicode__(self):
+        return self.name
 
 
 class BaseDocument(TimeStampedModel):
@@ -11,11 +19,6 @@ class BaseDocument(TimeStampedModel):
     original_text = models.TextField()
     goal_standard = models.TextField()
     group = models.ForeignKey(DocumentGroup, null=True, blank=True)
-
-
-class DocumentPart(TimeStampedModel):
-    document = models.ForeignKey(BaseDocument)
-    text = models.TextField()
 
 
 class GoalStandard(TimeStampedModel):

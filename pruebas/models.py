@@ -2,7 +2,7 @@ import json
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from clasificador.models import ClassifierModel
-from documentos.models import BaseDocument, Frame
+from documentos.models import BaseDocument, Frame, DocumentGroup
 
 
 class BaseTestResult(TimeStampedModel):
@@ -35,10 +35,17 @@ class BaseTestResult(TimeStampedModel):
         return result
 
 
+class DocumentTestResult(TimeStampedModel):
+    document_group = models.ForeignKey(DocumentGroup)
+    json_model = models.TextField()
+    model_version = models.ForeignKey(ClassifierModel, related_name='doc_test')
+    scoring_result = models.TextField(null=True)
+
+
 class DocumentAnnotation(TimeStampedModel):
     test_results = models.TextField()
     document = models.ForeignKey(BaseDocument, null=True)
-    test_running = models.ForeignKey(BaseTestResult)
+    test_running = models.ForeignKey(DocumentTestResult)
     raw_result = models.TextField(blank=True, null=True)
 
 
