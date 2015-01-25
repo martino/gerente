@@ -82,7 +82,7 @@ def normalize_topics_with_freq(topics, topic_len):
     return return_topic
 
 
-def create_new_model(gs, description='', topic_limit=20, random_sample=False):
+def create_new_model(gs, description='', topic_limit=20, random_sample=True):
     # create a new model
     model_data = {
         "description": description,

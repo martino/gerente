@@ -215,7 +215,9 @@ def test_document_set(model, document_group, threshold=0.32):
             count += 1
             res, raw_results = analyze_doc(doc, datatxt_id, dt, threshold)
             for key, value in res.iteritems():
-                global_results[key] += 1
+                if key not in global_results:
+                    global_results[key] = []
+                global_results[key].append(doc.pk)
 
             # create a document Annotation
             DocumentAnnotation.objects.create(
@@ -224,6 +226,7 @@ def test_document_set(model, document_group, threshold=0.32):
                 test_running=test_result,
                 raw_result=json.dumps(raw_results),
             )
+
     except Exception, e:
         print "huston we have a problem"
         print e
