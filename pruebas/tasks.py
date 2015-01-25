@@ -108,8 +108,8 @@ def score_result_complex(gs, res, mappings):
 # def analyze_frames(frames, model_id, dt, threshold=0.3):
 
 
-def analyze_frame(frame, model_id, dt, threshold=0.3):
-    res = dt.classify(model_id, frame.text)
+def analyze_frame(res, threshold=0.3):
+    # res = dt.classify(model_id, frame.text)
     res_topics = res.json().get('categories', {})
     result = ''
     if len(res_topics):
@@ -274,26 +274,34 @@ def test_model(datatxt_id, model, threshold=0):
         all_scores = []
         all_count = frame_to_analyze.count()
         count = 1
-        # TODO split into blocks of 10 elements and paralellize
-        for frame in frame_to_analyze:
-            print "{}/{}".format(count, all_count)
-            count += 1
-            current_class = frame.node.super_node\
-                .get(goal_standard=current_gs).name
-            found_class, raw_res = analyze_frame(
-                frame, datatxt_id, dt, threshold)
-            print 'frame: {} compute score: {} - {}'.format(
-                frame.pk, current_class, found_class)
-            score = score_result(current_class, found_class)
-            all_scores.append(score)
-            # score this annotation
-            FrameAnnotation.objects.create(
-                test_results=json.dumps(score),
-                raw_scoring=found_class,
-                raw_result=json.dumps(raw_res),
-                frame=frame,
-                test_running=test_result
-            )
+        frames_chuncked = chunks(frame_to_analyze, 40)
+        for frames in frames_chuncked:
+            reqs = []
+            annotations = []
+            for idx, frame_ in enumerate(frames):
+                reqs.append(dt.classify(datatxt_id, frame_.text, True))
+
+            for idx, res_obj in enumerate(grequests.map(reqs)):
+                print "{}/{}".format(count, all_count)
+                count += 1
+                frame = frames[idx]
+                current_class = frame.node.super_node\
+                    .get(goal_standard=current_gs).name
+                found_class, raw_res = analyze_frame(
+                    res_obj, threshold)
+                print 'frame: {} compute score: {} - {}'.format(
+                    frame.pk, current_class, found_class)
+                score = score_result(current_class, found_class)
+                all_scores.append(score)
+                # score this annotation
+                annotations.append(FrameAnnotation(
+                    test_results=json.dumps(score),
+                    raw_scoring=found_class,
+                    raw_result=json.dumps(raw_res),
+                    frame=frame,
+                    test_running=test_result
+                ))
+            FrameAnnotation.objects.bulk_create(annotations)
         #compute mico/macro precision
         micro = compute_micro(all_scores)
         test_result.micro_f1 = micro.get('fscore')
