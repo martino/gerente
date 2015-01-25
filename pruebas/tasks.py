@@ -124,20 +124,28 @@ def analyze_frame(frame, model_id, dt, threshold=0.3):
 
 def analyze_doc(doc, model_id, dt, threshold=0.25):
     all_results = defaultdict(int)
+    raw_results = []
     reqs = []
-    for part in split_document(doc.original_text):
+    reqs_data = []
+    for idx, part in enumerate(split_document(doc.original_text)):
         reqs.append(dt.classify(model_id, part, True))
+        reqs_data.append(part)
 
-    for res in grequests.map(reqs):
+    for idx, res in enumerate(grequests.map(reqs)):
         res_json = res.json()
         res_topics = res_json.get('categories', {})
+        raw_results.append({
+            'text': reqs_data[idx],
+            'response': res_topics,
+            'threshold': threshold
+            }
+        )
         if len(res_topics):
             best_obj = sorted(
                 res_topics, key=lambda x: x.get('score', 0), reverse=True)[0]
             if best_obj.get('score', 0) >= threshold:
-                #TODO introduce weigth based on frame length
                 all_results[best_obj.get('name')] += best_obj.get('score')
-    return all_results
+    return all_results, raw_results
 
 
 def compute_micro(scores):
@@ -186,7 +194,6 @@ def compute_macro(scores):
 def test_document_set(model, document_group, threshold=0.32):
     print 'Testing {}'.format(document_group)
     docs = document_group.basedocument_set.all()
-    dt = Datatxt()
     #create a new classifier on datatxt
     dt = Datatxt()
     req = dt.create_model(model.json_model)
@@ -206,7 +213,7 @@ def test_document_set(model, document_group, threshold=0.32):
         for doc in docs:
             print "{}/{}".format(count, all_count)
             count += 1
-            res = analyze_doc(doc, datatxt_id, dt, threshold)
+            res, raw_results = analyze_doc(doc, datatxt_id, dt, threshold)
             for key, value in res.iteritems():
                 global_results[key] += 1
 
@@ -214,7 +221,8 @@ def test_document_set(model, document_group, threshold=0.32):
             DocumentAnnotation.objects.create(
                 test_results=json.dumps(res),
                 document=doc,
-                test_running=test_result
+                test_running=test_result,
+                raw_result=json.dumps(raw_results),
             )
     except Exception, e:
         print "huston we have a problem"
