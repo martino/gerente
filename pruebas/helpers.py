@@ -4,7 +4,7 @@ from documentos.helpers import get_gs_node_labels
 
 
 def compute_most_popular_entities(raw_score):
-    categories = json.loads(raw_score).get('categories')
+    categories = raw_score.get('categories')
     if len(categories) == 0:
         return []
     selected_topic = sorted(

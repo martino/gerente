@@ -221,10 +221,10 @@ def test_document_set(model, document_group, threshold=0.32):
 
             # create a document Annotation
             DocumentAnnotation.objects.create(
-                test_results=json.dumps(res),
+                test_results=res,
                 document=doc,
                 test_running=test_result,
-                raw_result=json.dumps(raw_results),
+                raw_result=raw_results,
             )
 
     except Exception, e:
@@ -239,7 +239,7 @@ def test_document_set(model, document_group, threshold=0.32):
         document_group.testing_task_id = None
         document_group.save()
         if all_done:
-            test_result.scoring_result = json.dumps(global_results)
+            test_result.scoring_result = global_results
             test_result.save()
     return 0
 
@@ -298,9 +298,9 @@ def test_model(datatxt_id, model, threshold=0):
                 all_scores.append(score)
                 # score this annotation
                 annotations.append(FrameAnnotation(
-                    test_results=json.dumps(score),
+                    test_results=score,
                     raw_scoring=found_class,
-                    raw_result=json.dumps(raw_res),
+                    raw_result=raw_res,
                     frame=frame,
                     test_running=test_result
                 ))
@@ -316,7 +316,7 @@ def test_model(datatxt_id, model, threshold=0):
         test_result.macro_recall = macro.get('recall')
         test_result.save()
         confusion_matrix = compute_confusion_matrix(test_result, current_gs)
-        test_result.confusion_matrix = json.dumps(confusion_matrix)
+        test_result.confusion_matrix = confusion_matrix
         test_result.save()
     except Exception, e:
         print 'Huston we have a problem!'

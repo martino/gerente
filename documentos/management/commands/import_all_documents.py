@@ -40,7 +40,7 @@ class Command(BaseCommand):
             #     text = headers_split[1]
             doc = BaseDocument()
             doc.file_name = file_name
-            doc.goal_standard = json.dumps(goal_standard)
+            doc.goal_standard = goal_standard
             doc.original_text = original_text
             doc.save()
             # for part in text.split('.\n'):

@@ -90,7 +90,7 @@ def create_new_model(gs, description='', topic_limit=20, random_sample=True):
     }
     new_model = ClassifierModel()
     new_model.name = "AutoGen Model {}".format(datetime.now().isoformat())
-    new_model.json_model = json.dumps(model_data)
+    new_model.json_model = model_data
     new_model.goal_standard = gs
     new_model.save()
 
@@ -103,7 +103,7 @@ def create_new_model(gs, description='', topic_limit=20, random_sample=True):
         cluster = defaultdict(int)
         for frame in frame_group[0]:
             new_model.generation_frames.add(frame)
-            entities = json.loads(frame.annotations)
+            entities = frame.annotations
             for entity in entities:
                 url = entity.get('uri', '')
                 cluster[url] += 1

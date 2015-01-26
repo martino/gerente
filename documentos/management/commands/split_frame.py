@@ -41,5 +41,5 @@ class Command(BaseCommand):
                             Frame.objects.create(
                                 node=new_node,
                                 text=nt,
-                                annotations=json.dumps(annotations)
+                                annotations=annotations
                             )

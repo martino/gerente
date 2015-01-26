@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dt = Datatxt()
         for document in BaseDocument.objects.all():
-            gs = json.loads(document.goal_standard)
+            gs = document.goal_standard
             for class_name, value in gs.iteritems():
                 mc = Node.objects.get_or_create(name=class_name)[0]
                 for frame in value['frames']:
@@ -22,5 +22,5 @@ class Command(BaseCommand):
                     Frame.objects.create(
                         node=mc,
                         text=frame,
-                        annotations=json.dumps(annotations)
+                        annotations=annotations
                     )

@@ -1,9 +1,6 @@
-# documentos.model
-# change all textfield with json dumped data with hstore in django 1.8
-# http://bit.ly/1yDOVac
-
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from django_extensions.db.fields.json import JSONField
 
 
 class DocumentGroup(TimeStampedModel):
@@ -17,7 +14,7 @@ class DocumentGroup(TimeStampedModel):
 class BaseDocument(TimeStampedModel):
     file_name = models.TextField()
     original_text = models.TextField()
-    goal_standard = models.TextField()
+    goal_standard = JSONField()
     group = models.ForeignKey(DocumentGroup, null=True, blank=True)
 
 
@@ -31,7 +28,7 @@ class GoalStandard(TimeStampedModel):
 class SuperNode(TimeStampedModel):
     name = models.TextField()
     verbose_name = models.TextField(blank=True, null=True)
-    # this can be a foreignkey?
+    # TODO this can be a foreignkey?
     goal_standard = models.ManyToManyField(GoalStandard)
 
     def __unicode__(self):
@@ -53,7 +50,7 @@ class Node(TimeStampedModel):
 class Frame(TimeStampedModel):
     node = models.ForeignKey(Node)
     text = models.TextField()
-    annotations = models.TextField(null=True, blank=True)
+    annotations = JSONField(null=True, blank=True)
 
     def __unicode__(self):
         return self.text

@@ -8,7 +8,7 @@ class BaseTestResultSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return {
             'results': instance.get_result(),
-            'json': json.loads(instance.json_model),
+            'json': instance.json_model,
             'date': instance.created,
             'id': instance.pk,
         }

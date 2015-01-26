@@ -58,7 +58,7 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
         return {
             'id': instance.datatxt_id,
             'name': instance.name,
-            'data': json.loads(instance.json_model),
+            'data': instance.json_model,
             'testing_task': instance.testing_task_id,
             'last_test': last_test,
         }
@@ -77,7 +77,7 @@ class ClassifierModelSerializer(serializers.BaseSerializer):
             self.update_on_datatxt(
                 instance.datatxt_id, new_data
             )
-        instance.json_model = new_data
+        instance.json_model = json.loads(new_data)
         if validated_data.get('name') is not None:
             instance.name = validated_data.get('name')
         instance.save()

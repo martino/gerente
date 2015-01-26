@@ -1,12 +1,13 @@
 import json
 from django.db import models
+from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import TimeStampedModel
 from clasificador.models import ClassifierModel
 from documentos.models import BaseDocument, Frame, DocumentGroup
 
 
 class BaseTestResult(TimeStampedModel):
-    json_model = models.TextField()
+    json_model = JSONField()
     micro_f1 = models.FloatField(null=True, blank=True)
     macro_f1 = models.FloatField(null=True, blank=True)
     micro_precision = models.FloatField(null=True, blank=True)
@@ -14,7 +15,7 @@ class BaseTestResult(TimeStampedModel):
     micro_recall = models.FloatField(null=True, blank=True)
     macro_recall = models.FloatField(null=True, blank=True)
     model_version = models.ForeignKey(ClassifierModel, related_name='test')
-    confusion_matrix = models.TextField(null=True, blank=True)
+    confusion_matrix = JSONField(null=True, blank=True)
 
     def get_result(self):
         result = {
@@ -30,28 +31,28 @@ class BaseTestResult(TimeStampedModel):
             }
         }
         if self.confusion_matrix is not None:
-            result['cmatrix'] = json.loads(self.confusion_matrix)
+            result['cmatrix'] = self.confusion_matrix
 
         return result
 
 
 class DocumentTestResult(TimeStampedModel):
     document_group = models.ForeignKey(DocumentGroup)
-    json_model = models.TextField()
+    json_model = JSONField()
     model_version = models.ForeignKey(ClassifierModel, related_name='doc_test')
-    scoring_result = models.TextField(null=True)
+    scoring_result = JSONField(null=True)
 
 
 class DocumentAnnotation(TimeStampedModel):
-    test_results = models.TextField()
+    test_results = JSONField()
     document = models.ForeignKey(BaseDocument, null=True)
     test_running = models.ForeignKey(DocumentTestResult)
-    raw_result = models.TextField(blank=True, null=True)
+    raw_result = JSONField(blank=True, null=True)
 
 
 class FrameAnnotation(TimeStampedModel):
-    test_results = models.TextField()
-    raw_scoring = models.TextField(blank=True, null=True)
-    raw_result = models.TextField(blank=True, null=True)
+    test_results = JSONField()
+    raw_scoring = JSONField(blank=True, null=True)
+    raw_result = JSONField(blank=True, null=True)
     frame = models.ForeignKey(Frame, null=True)
     test_running = models.ForeignKey(BaseTestResult)
