@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from rest_framework import generics
+from documentos.models import DocumentGroup
+from documentos.serializers import DocumentGroupSerializer
 
-# Create your views here.
+
+class DocumentGroupList(generics.ListAPIView):
+    # TODO optimize with prefetch related?
+    queryset = DocumentGroup.objects.all()
+    serializer_class = DocumentGroupSerializer
