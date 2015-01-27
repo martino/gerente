@@ -1,9 +1,12 @@
 from django.http import Http404, HttpResponse
 from rest_framework import generics
+from rest_framework.generics import get_object_or_404
 from clasificador.models import ClassifierModel
 from gerente.datatxt_helpers import Datatxt
-from pruebas.models import BaseTestResult
-from pruebas.serializers import BaseTestResultSerializer
+from pruebas.models import BaseTestResult, DocumentTestResult, \
+    DocumentAnnotation
+from pruebas.serializers import BaseTestResultSerializer, \
+    DocumentTestResultSerializer, DocumentAnnotationSerializer
 from pruebas.tasks import test_model
 import json
 
@@ -43,11 +46,20 @@ class ClassifierModelList(generics.ListAPIView):
         pass
 
 
+class BaseDocumentTestDetails(generics.RetrieveAPIView):
+    serializer_class = DocumentTestResultSerializer
+    queryset = DocumentTestResult.objects.all()
 
-# class ClassifierModelDetail(generics.RetrieveAPIView):
-#     queryset = ClassifierModel.objects.all()
-#     serializer_class = BaseTestResultSerializer
-#
-#     def get_queryset(self):
-#         datatxt_id = self.kwargs['datatxt_id']
-#         return BaseTestResult.objects.filter(model_version__datatxt_id=datatxt_id)
+
+class DocumentAnnotationDetails(generics.RetrieveAPIView):
+    serializer_class = DocumentAnnotationSerializer
+
+    def get_object(self):
+        test_results = DocumentTestResult.objects.get(
+            pk=self.kwargs['test_pk'])
+        queryset = test_results.documentannotation_set.filter()
+
+        filter = {
+            'document__pk': self.kwargs['doc_pk']
+        }
+        return get_object_or_404(queryset, **filter)

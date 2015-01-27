@@ -3,8 +3,14 @@ from documentos import views
 
 urlpatterns = [
     url(
-        r'^documents/(?P<pk>[0-9\-]+)/$',
+        r'^document-group/$',
         views.DocumentGroupList.as_view(),
-        name='documents'
-    )
+        name='document-gorup'
+    ),
+    url(
+        r'^document-group/(?P<pk>[0-9\-]+)/$',
+        views.DocumentGroupDetails.as_view(),
+        name='document-group-details'
+    ),
+
 ]
