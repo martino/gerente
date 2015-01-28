@@ -1,5 +1,6 @@
 import grequests
 import requests
+import json
 
 from copy import copy
 from django.conf import settings
@@ -21,6 +22,8 @@ class Datatxt(object):
         }
 
     def create_model(self, model):
+        if not isinstance(model, basestring):
+            model = json.dumps(model)
         params = copy(self.default_params)
         params['data'] = model
         req = requests.post(self.urls['models'], data=params)

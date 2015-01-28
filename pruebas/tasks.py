@@ -2,13 +2,12 @@ from __future__ import absolute_import
 from collections import defaultdict
 
 import grequests
-import json
 
 from celery import shared_task
 from django.conf import settings
 from documentos.helpers import split_document
 
-from documentos.models import BaseDocument, Frame
+from documentos.models import Frame
 from gerente.datatxt_helpers import Datatxt
 from pruebas.helpers import compute_confusion_matrix
 from pruebas.models import BaseTestResult, DocumentAnnotation, FrameAnnotation, \
@@ -197,6 +196,10 @@ def test_document_set(model, document_group, threshold=0.32):
     #create a new classifier on datatxt
     dt = Datatxt()
     req = dt.create_model(model.json_model)
+    if not req.ok:
+        print 'Datatxt call earth, we have a problem'
+        return False
+
     res = req.json()
     datatxt_id = res.get('id')
 
@@ -205,7 +208,7 @@ def test_document_set(model, document_group, threshold=0.32):
         model_version=model,
         document_group=document_group
     )
-    global_results = defaultdict(int)
+    global_results = {}
     all_done = True
     try:
         all_count = docs.count()
