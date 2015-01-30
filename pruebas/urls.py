@@ -22,11 +22,21 @@ urlpatterns = [
     ),
 
     url(
+        r'^document-group/(?P<dg_pk>[0-9\-]+)/'
+        r'run-test/(?P<datatxt_id>[A-Za-z0-9\-]+)/$',
+        views.model_document_group,
+        name='document-group-run-test'
+    ),
+
+    url(
         r'^document-group/(?P<dg_pk>[0-9\-]+)/test/'
         r'(?P<test_pk>[0-9\-]+)/doc/(?P<doc_pk>[0-9\-]+)$',
         views.DocumentAnnotationDetails.as_view(),
         name='document-group-test-details'
     )
+
+
+    # model_document_group
 
     # url(
     #     r'^models/(?P<datatxt_id>[A-Za-z0-9\-]+)/results/(?P<test_id>[A-Za-z0-9\-]+)/$',

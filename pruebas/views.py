@@ -2,12 +2,13 @@ from django.http import Http404, HttpResponse
 from rest_framework import generics
 from rest_framework.generics import get_object_or_404
 from clasificador.models import ClassifierModel
+from documentos.models import DocumentGroup
 from gerente.datatxt_helpers import Datatxt
 from pruebas.models import BaseTestResult, DocumentTestResult, \
     DocumentAnnotation
 from pruebas.serializers import BaseTestResultSerializer, \
     DocumentTestResultSerializer, DocumentAnnotationSerializer
-from pruebas.tasks import test_model
+from pruebas.tasks import test_model, test_document_set
 import json
 
 
@@ -26,6 +27,24 @@ def model_test(request, datatxt_id):
     task = test_model.delay(model_id, model)
     model.testing_task_id = task
     model.save()
+    return HttpResponse(
+        json.dumps({'task': task.id}), 'application/json'
+    )
+
+
+def model_document_group(request, dg_pk, datatxt_id):
+    try:
+        model = ClassifierModel.objects.get(datatxt_id=datatxt_id)
+    except ClassifierModel.DoesNotExist:
+        raise Http404
+    try:
+        dg = DocumentGroup.objects.get(pk=dg_pk)
+    except DocumentGroup.DoesNotExist:
+        raise Http404
+    #launch a celery task with this model
+    task = test_document_set.delay(model, dg)
+    dg.testing_task_id = task
+    dg.save()
     return HttpResponse(
         json.dumps({'task': task.id}), 'application/json'
     )
