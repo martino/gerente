@@ -10,7 +10,7 @@ class DocumentGroupSerializer(serializers.ModelSerializer):
         if tests_results.count():
             last_test = tests_results[0].pk
         document_list = instance.basedocument_set.all().values(
-            'pk', 'file_name')
+            'id', 'file_name')
         return {
             'id': instance.pk,
             'name': instance.name,
