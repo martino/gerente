@@ -28,6 +28,10 @@ class DocumentTestResultSerializer(serializers.ModelSerializer):
             'id': instance.pk,
             'scoring_result': enriched_scoring_result,
             'running_date': instance.created,
+            'classifier_model': {
+                'id': instance.model_version.datatxt_id,
+                'name': instance.model_version.name
+            },
             'document_group': {
                 'id': instance.document_group.pk,
                 'document_count': related_documents.count(),
