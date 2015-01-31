@@ -26,9 +26,13 @@ class DocumentTestResultSerializer(serializers.ModelSerializer):
 
         return {
             'id': instance.pk,
-            'document_count': related_documents.count(),
             'scoring_result': enriched_scoring_result,
             'running_date': instance.created,
+            'document_group': {
+                'id': instance.document_group.pk,
+                'document_count': related_documents.count(),
+                'name': instance.document_group.name
+            }
         }
 
 
