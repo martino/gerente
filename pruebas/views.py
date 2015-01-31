@@ -41,7 +41,11 @@ def model_document_group(request, dg_pk, datatxt_id):
         dg = DocumentGroup.objects.get(pk=dg_pk)
     except DocumentGroup.DoesNotExist:
         raise Http404
-    threshold = request.GET.get('threshold', 0.25)
+    try:
+        threshold = float(request.GET.get('threshold'))
+    except ValueError:
+        threshold = 0.25
+
     #launch a celery task with this model
     task = test_document_set.delay(model, dg, threshold)
     dg.testing_task_id = task
