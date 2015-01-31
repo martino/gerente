@@ -13,4 +13,10 @@ urlpatterns = [
         name='document-group-details'
     ),
 
+    url(
+        r'^document/(?P<pk>[0-9\-]+)/$',
+        views.BaseDocumentDetails.as_view(),
+        name='base-document-details'
+    ),
+
 ]

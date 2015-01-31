@@ -19,3 +19,19 @@ class DocumentGroupSerializer(serializers.ModelSerializer):
             'last_test': last_test,
             'testing_task_id': instance.testing_task_id,
         }
+
+
+class BaseDocumentSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        serialization = {
+            'name': instance.file_name,
+            'text': instance.original_text,
+        }
+
+        if instance.group is not None:
+            serialization['group'] = {
+                'id': instance.group.pk,
+                'name': instance.group.name,
+            }
+
+        return serialization
