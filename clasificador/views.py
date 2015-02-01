@@ -4,7 +4,7 @@ from clasificador.serializers import ClassifierModelSerializer
 
 
 class ClassifierModelList(generics.ListCreateAPIView):
-    queryset = ClassifierModel.objects.all()
+    queryset = ClassifierModel.objects.all().order_by('created')
     serializer_class = ClassifierModelSerializer
 
     def check_permissions(self, request):

@@ -75,11 +75,22 @@ class BaseDocumentTestDetails(generics.RetrieveAPIView):
     serializer_class = DocumentTestResultSerializer
     queryset = DocumentTestResult.objects.all()
 
+    def check_permissions(self, request):
+        return True
+
+    def perform_authentication(self, request):
+        pass
+
 
 class BaseDocumentTestList(generics.ListAPIView):
     serializer_class = DocumentTestResultSmallSerializer
     queryset = DocumentTestResult.objects.all().order_by('-created')
 
+    def check_permissions(self, request):
+        return True
+
+    def perform_authentication(self, request):
+        pass
 
 class DocumentAnnotationDetails(generics.RetrieveAPIView):
     serializer_class = DocumentAnnotationSerializer
@@ -93,3 +104,9 @@ class DocumentAnnotationDetails(generics.RetrieveAPIView):
             'document__pk': self.kwargs['doc_pk']
         }
         return get_object_or_404(queryset, **filter)
+
+    def check_permissions(self, request):
+        return True
+
+    def perform_authentication(self, request):
+        pass
