@@ -4,9 +4,9 @@ from documentos.serializers import DocumentGroupSerializer, \
     BaseDocumentSerializer
 
 
-class DocumentGroupList(generics.ListAPIView):
+class DocumentGroupList(generics.ListCreateAPIView):
     # TODO optimize with prefetch related?
-    queryset = DocumentGroup.objects.all()
+    queryset = DocumentGroup.objects.all().order_by('created')
     serializer_class = DocumentGroupSerializer
 
     def check_permissions(self, request):
@@ -29,7 +29,6 @@ class DocumentGroupDetails(generics.RetrieveAPIView):
 
 
 class BaseDocumentDetails(generics.RetrieveAPIView):
-    # TODO optimize with prefetch related?
     queryset = BaseDocument.objects.all()
     serializer_class = BaseDocumentSerializer
 

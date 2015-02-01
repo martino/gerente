@@ -84,13 +84,21 @@ class BaseDocumentTestDetails(generics.RetrieveAPIView):
 
 class BaseDocumentTestList(generics.ListAPIView):
     serializer_class = DocumentTestResultSmallSerializer
-    queryset = DocumentTestResult.objects.all().order_by('-created')
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases for
+        the user as determined by the username portion of the URL.
+        """
+        doc_group = self.kwargs['doc_pk']
+        return DocumentTestResult.objects.filter(document_group__pk=doc_group).order_by('-created')
 
     def check_permissions(self, request):
         return True
 
     def perform_authentication(self, request):
         pass
+
 
 class DocumentAnnotationDetails(generics.RetrieveAPIView):
     serializer_class = DocumentAnnotationSerializer

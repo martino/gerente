@@ -1,7 +1,11 @@
 from rest_framework import serializers
+from documentos.models import DocumentGroup
 
 
 class DocumentGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentGroup
+
     def to_representation(self, instance):
         documents_count = instance.basedocument_set.all().count()
         tests_results = instance.documenttestresult_set.all()\
