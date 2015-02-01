@@ -16,6 +16,12 @@ urlpatterns = [
     ),
 
     url(
+        r'^document-group/(?P<doc_pk>[0-9\-]+)/test/$',
+        views.BaseDocumentTestList.as_view(),
+        name='document-group-test-list'
+    ),
+
+    url(
         r'^document-group/(?P<dg_pk>[0-9\-]+)/test/(?P<pk>[0-9\-]+)/$',
         views.BaseDocumentTestDetails.as_view(),
         name='document-group-test-details'
@@ -29,11 +35,12 @@ urlpatterns = [
     ),
 
     url(
-        r'^document-group/(?P<dg_pk>[0-9\-]+)/test/'
-        r'(?P<test_pk>[0-9\-]+)/doc/(?P<doc_pk>[0-9\-]+)$',
+        r'^document/(?P<doc_pk>[0-9\-]+)/test/'
+        r'(?P<test_pk>[0-9\-]+)/$',
         views.DocumentAnnotationDetails.as_view(),
-        name='document-group-test-details'
-    )
+        name='document-test-details'
+    ),
+
 
 
     # model_document_group

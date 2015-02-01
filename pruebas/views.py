@@ -7,7 +7,8 @@ from gerente.datatxt_helpers import Datatxt
 from pruebas.models import BaseTestResult, DocumentTestResult, \
     DocumentAnnotation
 from pruebas.serializers import BaseTestResultSerializer, \
-    DocumentTestResultSerializer, DocumentAnnotationSerializer
+    DocumentTestResultSerializer, DocumentAnnotationSerializer, \
+    DocumentTestResultSmallSerializer
 from pruebas.tasks import test_model, test_document_set
 import json
 
@@ -73,6 +74,11 @@ class ClassifierModelList(generics.ListAPIView):
 class BaseDocumentTestDetails(generics.RetrieveAPIView):
     serializer_class = DocumentTestResultSerializer
     queryset = DocumentTestResult.objects.all()
+
+
+class BaseDocumentTestList(generics.ListAPIView):
+    serializer_class = DocumentTestResultSmallSerializer
+    queryset = DocumentTestResult.objects.all().order_by('-created')
 
 
 class DocumentAnnotationDetails(generics.RetrieveAPIView):

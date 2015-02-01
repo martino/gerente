@@ -24,6 +24,7 @@ class DocumentGroupSerializer(serializers.ModelSerializer):
 class BaseDocumentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         serialization = {
+            'id': instance.pk,
             'name': instance.file_name,
             'text': instance.original_text,
         }
