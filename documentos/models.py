@@ -6,6 +6,7 @@ from django_extensions.db.fields.json import JSONField
 class DocumentGroup(TimeStampedModel):
     name = models.TextField()
     testing_task_id = models.TextField(blank=True, null=True)
+    importing_task_id = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return self.name

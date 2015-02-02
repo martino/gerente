@@ -22,6 +22,7 @@ class DocumentGroupSerializer(serializers.ModelSerializer):
             'document_list': document_list,
             'last_test': last_test,
             'testing_task_id': instance.testing_task_id,
+            'importing_task_id': instance.importing_task_id,
         }
 
 

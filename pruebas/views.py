@@ -4,8 +4,7 @@ from rest_framework.generics import get_object_or_404
 from clasificador.models import ClassifierModel
 from documentos.models import DocumentGroup
 from gerente.datatxt_helpers import Datatxt
-from pruebas.models import BaseTestResult, DocumentTestResult, \
-    DocumentAnnotation
+from pruebas.models import BaseTestResult, DocumentTestResult
 from pruebas.serializers import BaseTestResultSerializer, \
     DocumentTestResultSerializer, DocumentAnnotationSerializer, \
     DocumentTestResultSmallSerializer

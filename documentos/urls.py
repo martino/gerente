@@ -8,6 +8,12 @@ urlpatterns = [
         name='document-gorup'
     ),
     url(
+        r'^document-group/(?P<dg_pk>[0-9\-]+)/import/$',
+        views.DocumentImporter.as_view(),
+        name='document-group-importer'
+    ),
+
+    url(
         r'^document-group/(?P<pk>[0-9\-]+)/$',
         views.DocumentGroupDetails.as_view(),
         name='document-group-details'
