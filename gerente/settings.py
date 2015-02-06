@@ -110,3 +110,9 @@ MODEL_MAPPINGS = [{
     u'stigma inertia boiardi': 'SI SL CSVP',
     u'taken for grantedness': 'TFG',
 }]
+
+
+try:
+    from settings_local import *
+except ImportError:
+    pass
