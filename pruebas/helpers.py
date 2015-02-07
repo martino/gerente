@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict
 from documentos.helpers import get_gs_node_labels
 

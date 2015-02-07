@@ -1,5 +1,5 @@
 from collections import defaultdict
-import json
+import simplejson as json
 import operator
 from random import sample
 from clasificador.models import ClassifierModel
@@ -123,7 +123,8 @@ def create_new_model(gs, description='', topic_limit=20, random_sample=True):
     model_data['categories'] = categories
     serializer = ClassifierModelSerializer()
     serializer.update(
-        new_model, {'json_model': json.dumps(model_data)}, init_dt=True)
+        new_model,
+        {'json_model': json.dumps(model_data, use_decimal=True)}, init_dt=True)
 
 
 

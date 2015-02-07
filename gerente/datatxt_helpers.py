@@ -1,6 +1,7 @@
+import decimal
 import grequests
 import requests
-import json
+import simplejson as json
 
 from copy import copy
 from django.conf import settings
@@ -23,7 +24,7 @@ class Datatxt(object):
 
     def create_model(self, model):
         if not isinstance(model, basestring):
-            model = json.dumps(model)
+            model = json.dumps(model, use_decimal=True)
         params = copy(self.default_params)
         params['data'] = model
         req = requests.post(self.urls['models'], data=params)

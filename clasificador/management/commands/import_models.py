@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 from codecs import open
 from django.core.management import BaseCommand
 from clasificador.models import ClassifierModel
@@ -31,4 +31,5 @@ class Command(BaseCommand):
             return
 
         serializer = ClassifierModelSerializer()
-        serializer.update(model, {'json_model': json.dumps(new_model)})
+        serializer.update(
+            model, {'json_model': json.dumps(new_model, use_decimal=True)})
