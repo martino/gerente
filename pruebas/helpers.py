@@ -32,7 +32,7 @@ def compute_confusion_matrix(test_results, gs):
         except IndexError:
             decisive_topics = {}
 
-        if score == {}:
+        if score == '':
             score = 'empty'
         if score not in current_entry:
             current_entry[score] = {

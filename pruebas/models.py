@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import TextField
 from django_extensions.db.fields.json import JSONField
 from django_extensions.db.models import TimeStampedModel
 from clasificador.models import ClassifierModel
@@ -51,7 +52,7 @@ class DocumentAnnotation(TimeStampedModel):
 
 class FrameAnnotation(TimeStampedModel):
     test_results = JSONField()
-    raw_scoring = JSONField(blank=True, null=True)
+    raw_scoring = TextField(blank=True, null=True)
     raw_result = JSONField(blank=True, null=True)
     frame = models.ForeignKey(Frame, null=True)
     test_running = models.ForeignKey(BaseTestResult)
