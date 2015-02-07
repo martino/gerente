@@ -210,6 +210,8 @@ def test_document_set(model, document_group, threshold=0.32):
     )
     global_results = {}
     all_done = True
+    ret_code = 0
+
     try:
         all_count = docs.count()
         count = 1
@@ -236,6 +238,7 @@ def test_document_set(model, document_group, threshold=0.32):
         [doc_a.delete() for doc_a in test_result.documentannotation_set.all()]
         test_result.delete()
         all_done = False
+        ret_code = 1
     finally:
         #delete model
         dt.delete_model(datatxt_id)
@@ -244,7 +247,7 @@ def test_document_set(model, document_group, threshold=0.32):
         if all_done:
             test_result.scoring_result = global_results
             test_result.save()
-    return 0
+    return ret_code
 
 
 def chunks(l, n):
@@ -274,6 +277,7 @@ def test_model(datatxt_id, model, threshold=0):
     test_result.json_model = model.json_model
     test_result.model_version = model
     test_result.save()
+    ret_code = 0
 
     # tests all frames
     try:
@@ -326,9 +330,10 @@ def test_model(datatxt_id, model, threshold=0):
         print e
         [frame_a.delete() for frame_a in test_result.frameannotation_set.all()]
         test_result.delete()
+        ret_code = 1
     finally:
         dt.delete_model(datatxt_id)
         model.testing_task_id = None
         model.save()
 
-    return 0
+    return ret_code

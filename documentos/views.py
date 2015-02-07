@@ -59,7 +59,6 @@ class DocumentImporter(View):
                 'application/json',
                 400
             )
-        print dg_pk
         try:
             dg = DocumentGroup.objects.get(pk=dg_pk)
         except DocumentGroup.DoesNotExist:

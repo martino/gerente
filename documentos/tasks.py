@@ -26,6 +26,7 @@ def import_documents(dg, url):
     print "Importing {} into {}".format(url, dg)
     all_docs_pk = []
     filename = None
+    ret_code = 0
     try:
         # download zip file
         remote_filename = url.split('/')[-1]
@@ -56,10 +57,11 @@ def import_documents(dg, url):
         print "Hustom something went wrong"
         print e
         BaseDocument.objects.filter(pk__in=all_docs_pk).delete()
+        ret_code = 1
     finally:
         if filename is not None:
             os.remove(filename)
         dg.importing_task_id = None
         dg.save()
 
-    return 0
+    return ret_code
