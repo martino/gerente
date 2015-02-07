@@ -3,7 +3,7 @@ from rest_framework.exceptions import APIException
 from clasificador.models import ClassifierModel
 from gerente.datatxt_helpers import Datatxt
 
-import simpejson as json
+import simplejson as json
 from pruebas.models import BaseTestResult
 
 
