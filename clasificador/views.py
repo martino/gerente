@@ -40,13 +40,18 @@ class ClassifierCreate(View):
 
     def post(self, request):
         gs = GoalStandard.objects.all().order_by('-created')[0]
+        keyentities = True
+
+        if request.POST.get('use_keyentities') == 'false':
+            keyentities = False
+
         res = create_new_model(
             gs,
             request.POST.get('name'),
             request.POST.get('description'),
             int(request.POST.get('topic_limit')),
             True,
-            request.POST.get('use_keyentities'),
+            keyentities,
         )
 
         return HttpResponse(
