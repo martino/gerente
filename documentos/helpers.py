@@ -45,7 +45,6 @@ def get_sample(gs, random=False):
             selected_frames = Frame.objects.filter(pk__in=selected_pks)
             sample_frames.append((selected_frames, frame_group[1]))
         else:
-
             sample_frames.append((frame_group[0][:sample_size], frame_group[1]))
     return sample_frames
 
@@ -72,13 +71,11 @@ def normalize_topics_with_freq(topics, topic_len):
             # print "{} {} {} {}".format(
             #     tname, entity, count, entity_repetition, new_score)
             tmp_topics[tname][entity] = new_score
-
     for name, new_topic in tmp_topics.iteritems():
         ordered_topic = sorted(
             new_topic.items(), key=operator.itemgetter(1), reverse=True)
         topic_to_take = topic_len
         return_topic[name] = normalize_weight(ordered_topic[:topic_to_take])
-
     return return_topic
 
 
@@ -99,42 +96,53 @@ def create_new_model(gs, name=None, description='', topic_limit=20,
     new_model.goal_standard = gs
     new_model.save()
 
-    # generate a new sample set
-    sample_set = get_sample(gs, random_sample)
+    retvalue = True
 
-    # extract topic list
-    topics = {}
-    for frame_group in sample_set:
-        cluster = defaultdict(int)
-        for frame in frame_group[0]:
-            new_model.generation_frames.add(frame)
-            if use_keyentities:
-                entities = frame.key_entities
-                for (url, v) in entities.iteritems():
-                    cluster[url] += 1
-            else:
-                entities = frame.annotations
-                for entity in entities:
-                    url = entity.get('uri', '')
-                    cluster[url] += 1
-        topics[frame_group[1]] = cluster
-    new_model.save()
+    try:
+        # generate a new sample set
+        sample_set = get_sample(gs, random_sample)
 
-    # adjust topic list with
-    final_topics = normalize_topics_with_freq(topics, topic_limit)
+        # extract topic list
+        topics = {}
+        for frame_group in sample_set:
+            cluster = defaultdict(int)
+            for frame in frame_group[0]:
+                new_model.generation_frames.add(frame)
+                if use_keyentities:
+                    entities = frame.key_entities
+                    if entities == "{}":
+                        use_keyentities = False
+                    else:
+                        for (url, v) in entities.iteritems():
+                            if url is not None:
+                                cluster[url] += 1
 
-    categories = []
-    for name, topic in final_topics.iteritems():
-        categories.append({
-            'name': name,
-            'topics': {t[0]: t[1] for t in topic}
-        })
+                if not use_keyentities:
+                    entities = frame.annotations
+                    for entity in entities:
+                        url = entity.get('uri', None)
+                        if url is not None:
+                            cluster[url] += 1
+            topics[frame_group[1]] = cluster
+        new_model.save()
 
-    model_data['categories'] = categories
-    serializer = ClassifierModelSerializer()
-    serializer.update(
-        new_model,
-        {'json_model': json.dumps(model_data, use_decimal=True)}, init_dt=True)
+        # adjust topic list with
+        final_topics = normalize_topics_with_freq(topics, topic_limit)
 
-    return True
+        categories = []
+        for name, topic in final_topics.iteritems():
+            categories.append({
+                'name': name,
+                'topics': {t[0]: t[1] for t in topic}
+            })
+        model_data['categories'] = categories
+        serializer = ClassifierModelSerializer()
+        serializer.update(
+            new_model,
+            {'json_model': json.dumps(model_data, use_decimal=True)}, init_dt=True)
+    except Exception, e:
+        print e
+        retvalue = False
+        new_model.delete()
+    return retvalue
 

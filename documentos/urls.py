@@ -25,4 +25,10 @@ urlpatterns = [
         name='base-document-details'
     ),
 
+    # url(
+    #     r'^goalstandard/$',
+    #     views.BaseDocumentDetails.as_view(),
+    #     name='goalstandard-list'
+    # )
+
 ]

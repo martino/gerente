@@ -39,18 +39,15 @@ class ClassifierCreate(View):
             request, *args, **kwargs)
 
     def post(self, request):
-        gs = GoalStandard.objects.all()[0]
-        try:
-            res = create_new_model(
-                gs,
-                request.POST.get('name'),
-                request.POST.get('description'),
-                request.POST.get('topic_limit'),
-                True,
-                request.POST.get('use_keyentities'),
-                )
-        except:
-            res = False
+        gs = GoalStandard.objects.all().order_by('-created')[0]
+        res = create_new_model(
+            gs,
+            request.POST.get('name'),
+            request.POST.get('description'),
+            int(request.POST.get('topic_limit')),
+            True,
+            request.POST.get('use_keyentities'),
+        )
 
         return HttpResponse(
             json.dumps({'result': res}), 'application/json'
