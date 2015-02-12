@@ -52,6 +52,7 @@ class Frame(TimeStampedModel):
     node = models.ForeignKey(Node)
     text = models.TextField()
     annotations = JSONField(null=True, blank=True)
+    key_entities = JSONField(null=True, blank=True)
 
     def __unicode__(self):
         return self.text

@@ -1,6 +1,7 @@
-import json
 from django.core.management import BaseCommand
 from django.db import transaction
+import requests
+from django.conf import settings
 from documentos.models import GoalStandard, Frame, SuperNode, Node
 from gerente.datatxt_helpers import Datatxt
 
@@ -15,7 +16,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dt = Datatxt()
         with transaction.atomic():
-            gs = GoalStandard.objects.create(name='Protezionismo v3')
+            gs = GoalStandard.objects.create(name='Protezionismo v4')
             old_gs = GoalStandard.objects.get(pk=2)
             old_frames = [
                 (b.name, b.verbose_name, b.node_set.all().values_list('pk', 'name'))
@@ -35,11 +36,29 @@ class Command(BaseCommand):
                         new_texts = split_frame(frame.text)
                         for nt in new_texts:
                             annotations = {}
-                            res = dt.nex(nt)
+                            key_annotations = {}
+                            # use keyword entities:
+                            res = requests.post(
+                                settings.KEYWORDS_SERVICE,
+                                data={'max': 15, 'text': nt},
+                                auth=settings.KEYWORDS_SERVICE_AUTH
+                            )
+                            # anntoate with datatxt
+                            dt_res = dt.nex(nt)
+
                             if res.ok:
+                                clusters = res.json().get('clusters')
+                                key_annotations = {
+                                    e: r
+                                    for cluster in clusters
+                                    for (e, r) in cluster.iteritems()
+                                }
+
+                            if dt_res.ok:
                                 annotations = res.json().get('annotations')
                             Frame.objects.create(
                                 node=new_node,
                                 text=nt,
-                                annotations=annotations
+                                annotations=annotations,
+                                key_entities=key_annotations
                             )
