@@ -1,6 +1,12 @@
+import json
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import View
 from rest_framework import generics
 from clasificador.models import ClassifierModel
 from clasificador.serializers import ClassifierModelSerializer
+from documentos.helpers import create_new_model
+from documentos.models import GoalStandard
 
 
 class ClassifierModelList(generics.ListCreateAPIView):
@@ -25,3 +31,27 @@ class ClassifierModelDetail(generics.RetrieveUpdateAPIView):
     def perform_authentication(self, request):
         pass
 
+
+class ClassifierCreate(View):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(ClassifierCreate, self).dispatch(
+            request, *args, **kwargs)
+
+    def post(self, request):
+        gs = GoalStandard.objects.all()[0]
+        try:
+            res = create_new_model(
+                gs,
+                request.POST.get('name'),
+                request.POST.get('description'),
+                request.POST.get('topic_limit'),
+                True,
+                request.POST.get('use_keyentities'),
+                )
+        except:
+            res = False
+
+        return HttpResponse(
+            json.dumps({'result': res}), 'application/json'
+        )

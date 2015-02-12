@@ -82,14 +82,19 @@ def normalize_topics_with_freq(topics, topic_len):
     return return_topic
 
 
-def create_new_model(gs, description='', topic_limit=20, random_sample=True):
+def create_new_model(gs, name=None, description='', topic_limit=20,
+                     random_sample=True, use_keyentities=False):
     # create a new model
     model_data = {
         "description": description,
         "lang": "it"
     }
+
+    if name is None:
+        name = "AutoGen Model {}".format(datetime.now().isoformat())
+
     new_model = ClassifierModel()
-    new_model.name = "AutoGen Model {}".format(datetime.now().isoformat())
+    new_model.name = name
     new_model.json_model = model_data
     new_model.goal_standard = gs
     new_model.save()
@@ -103,10 +108,15 @@ def create_new_model(gs, description='', topic_limit=20, random_sample=True):
         cluster = defaultdict(int)
         for frame in frame_group[0]:
             new_model.generation_frames.add(frame)
-            entities = frame.annotations
-            for entity in entities:
-                url = entity.get('uri', '')
-                cluster[url] += 1
+            if use_keyentities:
+                entities = frame.key_entities
+                for (url, v) in entities.iteritems():
+                    cluster[url] += 1
+            else:
+                entities = frame.annotations
+                for entity in entities:
+                    url = entity.get('uri', '')
+                    cluster[url] += 1
         topics[frame_group[1]] = cluster
     new_model.save()
 
@@ -126,5 +136,5 @@ def create_new_model(gs, description='', topic_limit=20, random_sample=True):
         new_model,
         {'json_model': json.dumps(model_data, use_decimal=True)}, init_dt=True)
 
-
+    return True
 
