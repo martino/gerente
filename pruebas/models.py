@@ -42,6 +42,9 @@ class DocumentTestResult(TimeStampedModel):
     model_version = models.ForeignKey(ClassifierModel, related_name='doc_test')
     scoring_result = JSONField(null=True)
 
+    def __unicode__(self):
+        return "{}".format(self.created)
+
 
 class DocumentAnnotation(TimeStampedModel):
     test_results = JSONField()
