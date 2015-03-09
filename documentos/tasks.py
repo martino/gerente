@@ -4,6 +4,7 @@ import zipfile
 import requests
 import tempfile
 import fnmatch
+import codecs
 from celery import shared_task
 from codecs import open
 from documentos.models import BaseDocument
@@ -16,10 +17,15 @@ def import_document(dg, file_path):
     with open(file_path) as f:
         text = f.read()
 
-    try:
-        text = text.encode("utf-8")
-    except:
-        text = text.decode('latin1').encode("utf-8")
+    if text.startswith(codecs.BOM_UTF16_LE) or text.startswith(
+            codecs.BOM_UTF16_BE):
+        text = text.decode('utf-16').encode("utf-8")
+    else:
+        try:
+            text = text.encode("utf-8")
+        except:
+            print 'asd'
+            text = text.decode('latin1').encode("utf-8")
 
     doc = BaseDocument.objects.create(
         file_name=file_name,
