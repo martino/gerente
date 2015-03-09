@@ -88,8 +88,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-APP_ID = '***REMOVED***'
-APP_KEY = '163560ca***REMOVED***'
+APP_ID = 'INSERT_YOUR_APP_ID'
+APP_KEY = 'INSERT_YOUR_APP_KEY'
 DATATXT = 'https://api.dandelion.eu'
 
 
