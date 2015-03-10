@@ -13,8 +13,11 @@ def split_document(text, use_paragraph=True):
     headers_split = text.split('\t\t\n\t\t\n')
     if len(headers_split) == 2:
         text = headers_split[1]
+    parts = text.split('.\n')
+    if len(parts) == 1:
+        parts = text.split('.\r\n')
 
-    return text.split('.\n')
+    return parts
 
 
 def get_gs_node_labels(gs):
