@@ -16,7 +16,7 @@ def split_document(text, use_paragraph=True):
     parts = text.split('.\n')
     if len(parts) == 1:
         parts = text.split('.\r\n')
-    if len(parts) == 1:
+    if len(parts) < 3:
         parts = text.split('.')
     return parts
 
